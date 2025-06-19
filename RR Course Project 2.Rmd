@@ -92,6 +92,24 @@ This section presents a few remarks in the EDA on the data from NOAA.
 base::dim(raw_data)
 ```
 
+## 6.2 Head and Tail
+
+Printing the first 5 rows from data set
+
+```{r, message=FALSE,warning=FALSE}
+# printing the first 5 rows from raw data
+head(raw_data,5)
+```
+
+
+Printing the last 5 rows from data set
+
+```{r, message=FALSE,warning=FALSE}
+# printing the last 5 rows from raw data
+tail(raw_data,5)
+```
+
+
 
 
 
