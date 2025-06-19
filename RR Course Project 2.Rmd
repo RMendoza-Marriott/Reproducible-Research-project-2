@@ -82,7 +82,15 @@ raw_data <- dplyr::tbl_df(raw_data)
 ```
 
 
+## 6 Some EDA on the data
 
+This section presents a few remarks in the EDA on the data from NOAA.
+
+## 6.1 Dimensions 
+
+```{r, message=FALSE,warning=FALSE}
+base::dim(raw_data)
+```
 
 
 
