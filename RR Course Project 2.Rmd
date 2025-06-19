@@ -114,10 +114,26 @@ tail(raw_data,5)
 
 The dataset from NOAA has 37 variables, as wee seen using the `str` function
 
-
 ```{r, message=FALSE,warning=FALSE}
 utils::str(raw_data)
 ```
+
+## 6.3 `NA` Presence
+
+```{r, message=FALSE,warning=FALSE}
+# Printing the summ of LATITUDE
+summary(raw_data$LATITUDE)
+```
+
+```{r, message=FALSE,warning=FALSE}
+# Printing the summ of Latitude_e
+summary(raw_data$LATITUDE_E)
+```
+
+
+
+
+
 
 
 
