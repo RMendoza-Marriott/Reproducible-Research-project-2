@@ -131,6 +131,37 @@ summary(raw_data$LATITUDE_E)
 ```
 
 
+## 6.4 Exponential variables´s treatment
+
+The `PROPDMGEXP` and `CROPDMGEXP`(Properties Exponential and Crop Exponential) variables store the base 10 exponential value of `PROPDMG` and `CROPDMG`,
+respectively. For this reason, it is necessary to combine `PROPDMG` and `PROPDMGEXP` into a single variable and do the same to `CROPDMG` and `CROPDMGEXP`
+
+Therefore, it is essential to understand how the `PROPDMGEXP` and `CROPDMGEXP` were recorded.
+
+
+```{r, message=FALSE,warning=FALSE}
+# Printing the unique values to exponential to properties
+unique(raw_data$PROPDMGEXP)
+```
+
+```{r, message=FALSE,warning=FALSE}
+# Printing the unique values to exponential to Crops.
+unique(raw_data$CROPDMGEXP)
+```
+
+Finally, the notation is not uniform because sometimes they use Capital or Lowercase (e.g., `K` or `k`). In other cases, they use a number or insert a question mark (`?`) or plus/minus signal (e.g., `-` or `+`).
+
+*`PROPDMGEXP`
+
+  + `?`: Has 8 (eight) observations with this notation, none of the rows of `PROPDM` and `CROPDMG` has values;
+  + `+`: Has 5 (five) observations with this notation, and;
+  + `-`: Has 1 (one) observation with this notation and 1 (one) fatality. I will consider like “0”.
+
+
+*`CROPDMGEXP`
+
+  + `?`: Has 7 (seven) observations with this notation, all those with `CROPDMG` as zero;
+
 
 
 
