@@ -287,17 +287,203 @@ df_subset_2 <- df_subset %>%
         CROPDMGEXP %in% c("K", "k", 3) ~ CROPDMG * 1000,
         CROPDMGEXP %in% c("M", "m", 6) ~ CROPDMG * 1000000,
         CROPDMGEXP %in% c("B", "b", 9) ~ CROPDMG * 1000000000)) 
-
-
 ```
 
 
 
+## 7.3 Uniform `Event type`
+
+The `EVTYPE` variable is not tidy because there are a lot of classifications with the same meaning but different notations. 
+Hence, I will standardize this variable following the rules inside of the next chunk.
+
+
+```{r, message=FALSE,warning=FALSE}
+# Standardizing the EVTYPE variable.
+df_subset_3 <- df_subset_2 %>%
+    
+    # Converting all value to be UPPERCASE.
+    mutate(EVTYPE = stringr::str_to_upper(EVTYPE)) %>%
+    
+    # Rules to aggregate events into a new variable called EVTYPE_2
+    mutate(EVTYPE_2 = case_when(
+        grepl(pattern = "*HURRICANE*|*TYPHOON*", x = EVTYPE) ~ "HURRICANE",
+        grepl(pattern = "*TORNADO*", x = EVTYPE) ~ "TORNADO",
+        grepl(pattern = "*THUNDERSTORM WIN*|*TSTM*|*FUNNEL CLOUD*|*FUNNEL*|*THUNDERSTORM*", x = EVTYPE) ~ "THUNDERSTORM WIND",
+        grepl(pattern = "*FLOOD*|*FLD*", x = EVTYPE) ~ "FLOOD",
+        grepl(pattern = "*HAIL*", x = EVTYPE) ~ "HAIL",
+        grepl(pattern = "*HIGH WIND*|*STRONG WIND*|WIND", x = EVTYPE) ~ "HIGH WIND",
+        grepl(pattern = "*FOREST FIRE*|*WILD FIRES*|*WILDFIRE*", x = EVTYPE) ~ "FOREST FIRE",
+        grepl(pattern = "*LIGHTNING*", x = EVTYPE) ~ "LIGHTNING",
+        grepl(pattern = "*HEAT*|*DROUGHT*|*EXCESSIVE HEAT*|*RECORD HIGH*|*WARMTH*|*UNSEASONABLY WARM*|*UNSEASONABLY DRY*|*TEMPERATURE RECORD*|*RECORD TEMPERATURE*|*DRY*", x = EVTYPE) ~ "EXCESSIVE HEAT",
+        grepl(pattern = "*WINTER WEATHER*|*FROST/FREEZE*|*EXTREME COLD*|*COLD*|*ICE*|*FREEZE*|*FROST*|*WINTRY MIX*|*LOW TEMPERATURE*", x = EVTYPE) ~ "EXCESSIVE COLD",
+        grepl(pattern = "*WINTER STORM*|*SLEET*|*SNOW*|*BLIZZARD*|*FREEZING RAIN*", x = EVTYPE) ~ "ICE STORM",
+        grepl(pattern = "*LANDSLIDE*|*MUDSLIDE*|*MUD SLIDE*", x = EVTYPE) ~ "LANDSLIDE",
+        grepl(pattern = "*AVALANCHE*", x = EVTYPE) ~ "AVALANCHE",
+        grepl(pattern = "*FOG*|*SMOKE*", x = EVTYPE) ~ "FOG",
+        grepl(pattern = "*DUST*", x = EVTYPE) ~ "DUST",
+        grepl(pattern = "*CURRENT*|*SURF*", x = EVTYPE) ~ "CURRENT",
+        grepl(pattern = "*TSUNAMI*", x = EVTYPE) ~ "TSUNAMI",
+        grepl(pattern = "*WATERSPOUT*", x = EVTYPE) ~ "WATERSPOUT")) %>%
+    
+    # Creating a OTHER type of event to aggregate minor events.
+    mutate(EVTYPE_2 = case_when(
+        is.na(EVTYPE_2) ~ "OTHER",
+        !is.na(EVTYPE_2) ~ EVTYPE_2)) %>%
+    
+    # Dropping EVTYPE because it is not necessary to carry it.
+    select(-EVTYPE) %>%
+    
+    # Renaming the EVTYPE_2 to be the new EVTYPE
+    mutate(EVTYPE = EVTYPE_2)
+```
+
+
+After the standardization, the new `EVTYPE` has 19 categories.
+
+
+```{r, message=FALSE,warning=FALSE}
+
+# Printing the standards of Event Type
+unique(df_subset_3$EVTYPE)
+```
 
 
 
+## 7.4 Getting the  `Tidy Data`
 
 
+The `Tidy Data` is result of combining: `EVTYPE`, `INJURIES`, `FATALITIES`, `PROPDMGABS` 
+and `CROPDMGABS`
+
+```{r, message=FALSE,warning=FALSE}
+
+# Creating the tidy dataset.
+df_tidy <- df_subset_3 %>%
+    
+    # Dropping the columns: PROPDMGEXP, PROPDMG, CROPDMGEXP, CROPDMG
+    select(-c(PROPDMGEXP, PROPDMG, CROPDMGEXP, CROPDMG))
+
+```
+
+
+## 7.5 Getting the  `Results`
+
+Question 1:
+
+Across the United States, which types of events (as indicated in the `EVTYPE` start color red, start verbatim, `EVTYPE`, end verbatim, end color red variable) are most harmful with respect to population health?
+
+
+As first option, I define `harmful` as the summation of: `INJURIES` and `FATALITIES` for each `EVTYPE` (as it was defined before)
+
+In that order, the next step was creating the following variables:
+
+
+*`New variables:`
+
+  +`INJURIES_AVG`: average of injuries as a proportion of its quantities;
+    
+  +`FATALITIES_AVG`: average of fatalities as a proportion of its quantities;
+    
+  +`HARMFUL_AVG`: average of harmful as a proportion of its quantities;
+    
+
+```{r, message=FALSE,warning=FALSE}
+
+# This subset will creates averages of each EVTYPE and add the Harmful variable.
+df_tidy_q1 <- df_tidy %>%
+    
+    # Creating the HARMFUL variable.
+    mutate(HARMFUL = INJURIES + FATALITIES) %>%
+    
+    # Aggregate everything using EVTYPE.
+    group_by(EVTYPE) %>%
+    
+    # Summarizes the data using the group by EVTYPE.
+    summarise(HARMFUL = sum(HARMFUL),
+              QTY = n(),
+              FATALITIES = sum(FATALITIES),
+              INJURIES = sum(INJURIES)) %>%
+    
+    # Arrange to be descendant.
+    arrange(desc(HARMFUL)) %>%
+    
+    # Adding averages variables.
+    mutate(HARMFUL_AVG = HARMFUL/QTY,
+           FATALITIES_AVG = FATALITIES/QTY,
+           INJURIES_AVG = INJURIES/QTY)
+```  
+
+
+The adjusted dataset will be shown below:
+
+```{r, message=FALSE,warning=FALSE}
+
+
+# Printing the table
+head(df_tidy_q1, 19) %>% kableExtra::kbl() %>% kableExtra::kable_styling()
+
+```
+
+
+Once, based on the `Tidy Data` on the `df_tidy_q1` dataframe the plot shows as
+follows:
+
+```{r, message=FALSE,warning=FALSE}
+
+# Creating a auxiliary dataset to plot 1.
+# It will be necessary to put the dataset in such a way to be helpful to ggplot2.
+rbind(
+    
+    # Gathering the dataset to have absolute data in rows.
+    df_tidy_q1 %>%
+    select(EVTYPE, FATALITIES, INJURIES) %>%
+    mutate(EVTYPE = factor(EVTYPE, levels = EVTYPE)) %>%
+    pivot_longer(cols = 2:3, names_to = "HARMFUL", values_to = "VALUES") %>%
+    mutate(VALUE_TYPE = factor("ABSOLUTE")),
+    
+    # Gathering the dataset to average have average data in rows.
+    df_tidy_q1 %>%
+    arrange(desc(HARMFUL_AVG)) %>%
+    select(EVTYPE, FATALITIES_AVG, INJURIES_AVG) %>%
+    mutate(EVTYPE = factor(EVTYPE, levels = EVTYPE)) %>%
+    pivot_longer(cols = 2:3, names_to = "HARMFUL", values_to = "VALUES")%>%
+    mutate(VALUE_TYPE = factor("AVERAGE"))) %>%
+    
+    # Plotting the graph using GGPLOT2
+    ggplot(aes(fill = HARMFUL, y = VALUES, x = EVTYPE)) + 
+    
+    # Defining a stacked barplot.
+    geom_bar(position = "stack", stat = "identity") +
+    
+    # Defining the graph title.
+    ggplot2::labs(title = "Most Harmful Event Type") + 
+    
+    # Defining the x-axis label
+    ggplot2::xlab("Event Type") +
+    
+    # Defining the y-axis label
+    ggplot2::ylab("Health Harmful") +
+    
+    # Adjusting the x-axis to be 90 degrees.
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
+          legend.position = "right",
+          plot.title = element_text(hjust = 0.5),
+          plot.subtitle = element_text(hjust = 0.5)) +
+    
+    # Removing the legend title.
+        ggplot2::guides(fill = ggplot2::guide_legend(title = "")) + 
+    
+    # Creating facet to show absolute and average values.
+    facet_grid(rows = vars(VALUE_TYPE), scales = "free")
+
+```
+
+
+# Remarks:
+
+In term of absolute value, there are no doubt that `TORNADO` events are the most harmful to health due to the high frequency of tornadoes. The number of tornadoes observed in the dataset is more than 60 thousand (between 1950 and 2011), which results in 5.661 `FATALITIES`, 91.407 `INJURIES`, and 97.068 health `HARMFUL`.
+
+However, whether you analyze it in terms of average, in that case, the `TSUNAMI` event type has the highest averages of `INJURIES` and `FATALITIES`, resulting in increased health `HARMFUL`. The meaning of seeing the `average` is to identify the most deadly event type.
 
 
 
