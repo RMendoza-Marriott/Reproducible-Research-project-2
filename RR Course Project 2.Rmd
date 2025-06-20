@@ -219,10 +219,77 @@ df_subset <- select(raw_data,EVTYPE,INJURIES,FATALITIES,PROPDMG,PROPDMGEXP,CROPD
 
 
 
+## 7.2 Merging damage and exponential variables
+
+It is necessary to merge `PROPDMG` and `PROPDMGEXP` into a single variable, so I will create the `PROPDMGABS` using the following rules.
+
+*`Adjusted variables:`
+
+  +All `0`, and `-` will be converted into 1;
+  
+  +All `1` will be converted into 10;
+  
+  +All `H`, `h` and `2` will be converted into 100;
+  
+  +All `K`, `k` and `3` will be converted into 1000;
+  
+  +All `4` will be converted into 10000;
+  
+  +All `5` will be converted into 100000;
+  
+  +All `M`, `m` and `6` will be converted into 1000000;
+  
+  +All `7` will be converted into 10000000;
+  
+  +All `8` will be converted into 100000000;
+  
+  +All `B`, `b` and `9` will be converted into 1000000000;
+
+Following the same principles, I will merge `CROPDMG` and `CROPDMG` to create `CROPDMGABS`:
 
 
+*`Adjusted variables:`
+
+  +All `0`, and `?` will be converted into 1;
+  
+  +All `H`,`h` and `2` will be converted into 100;
+  
+  +All `K`, `k` and `3` will be converted into 1000;
+  
+  +All `M`, `m` and `6` will be converted into 1000000;
+  
+  +All `B`, `b` and `9` will be converted into 1000000000
+  
+  
+The `PROPDMGABS` and `CROPDMGABS` will be in charge of storing the absolute values of Properties Damages and Crops Damages.
 
 
+```{r, message=FALSE,warning=FALSE}
+# Merging exponential column and value column.
+df_subset_2 <- df_subset %>%
+  # Creating a new column PROPDMGABS
+    mutate(PROPDMGABS = case_when(
+        PROPDMGEXP %in% c("", "-",0) ~ PROPDMG * 1,
+        PROPDMGEXP %in% c(1)         ~ PROPDMG * 10,
+        PROPDMGEXP %in% c("H","h",2) ~ PROPDMG * 100,
+        PROPDMGEXP %in% c("K","k",3) ~ PROPDMG * 1000,
+        PROPDMGEXP %in% c(4)         ~ PROPDMG * 10000,
+        PROPDMGEXP %in% c(5)         ~ PROPDMG * 100000,
+        PROPDMGEXP %in% c("M","m",6) ~ PROPDMG * 1000000,
+        PROPDMGEXP %in% c(7)         ~ PROPDMG * 10000000,
+        PROPDMGEXP %in% c(8)         ~ PROPDMG * 100000000,
+        PROPDMGEXP %in% c("B","b",9) ~ PROPDMG * 1000000000)) %>%
+
+# Creating a new column CROPDMGABS
+    mutate(CROPDMGABS = case_when(
+        CROPDMGEXP %in% c("?","", 0)   ~ CROPDMG * 1,
+        CROPDMGEXP %in% c("H", "h", 2) ~ CROPDMG * 100,
+        CROPDMGEXP %in% c("K", "k", 3) ~ CROPDMG * 1000,
+        CROPDMGEXP %in% c("M", "m", 6) ~ CROPDMG * 1000000,
+        CROPDMGEXP %in% c("B", "b", 9) ~ CROPDMG * 1000000000)) 
+
+
+```
 
 
 
