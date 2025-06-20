@@ -368,7 +368,7 @@ df_tidy <- df_subset_3 %>%
 
 ## 7.5 Getting the  `Results`
 
-Question 1:
+#Question 1:
 
 Across the United States, which types of events (as indicated in the `EVTYPE` start color red, start verbatim, `EVTYPE`, end verbatim, end color red variable) are most harmful with respect to population health?
 
@@ -484,6 +484,15 @@ rbind(
 In term of absolute value, there are no doubt that `TORNADO` events are the most harmful to health due to the high frequency of tornadoes. The number of tornadoes observed in the dataset is more than 60 thousand (between 1950 and 2011), which results in 5.661 `FATALITIES`, 91.407 `INJURIES`, and 97.068 health `HARMFUL`.
 
 However, whether you analyze it in terms of average, in that case, the `TSUNAMI` event type has the highest averages of `INJURIES` and `FATALITIES`, resulting in increased health `HARMFUL`. The meaning of seeing the `average` is to identify the most deadly event type.
+
+
+# Question 2:
+
+
+Across the United States, which types of events have the greatest economic consequences?
+
+As was response in question 1, the next step was defining a new variable for `economic consequences`, as the result of
+aggregating properties damages: Properties Damages (`PROPDMGABS`), and Crop Damage (`CROPDMGABS`).
 
 
 
