@@ -163,6 +163,7 @@ Finally, the notation is not uniform because sometimes they use Capital or Lower
   + `?`: Has 7 (seven) observations with this notation, all those with `CROPDMG` as zero;
 
 
+## 6.5 Grouping data by `Event type`
 
 
 
