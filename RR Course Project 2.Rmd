@@ -165,6 +165,75 @@ Finally, the notation is not uniform because sometimes they use Capital or Lower
 
 ## 6.5 Grouping data by `Event type`
 
+The raw dataset has 985 Event Types, the code below will present the first 10.
+
+
+```{r, message=FALSE,warning=FALSE}
+raw_data %>%
+    group_by(EVTYPE) %>%
+    summarise(n = n()) %>%
+    arrange(desc(n)) %>%
+    head(10)
+```
+
+
+## 7 Working on the data
+
+There are some troubles working on these date variables: `BGN_DATE`, `END_DATE`,
+and `END_TIME`, helpfully we are not using these variables as a part of the
+course project.
+
+Keeping up with the main goal of this project, the dataset will be subsetted as
+follows:
+
+
+## 7.1 Subsseting the raw data
+
+As we move on the project, we are looking for the most harmful events concerning
+in: population health and the economic consequences (loses in USD american dollars).
+
+In that order, the data that will be subsetted from the `raw_data` will be:
+
+*`Variables:`
+
+  +`EVTYPE`: Event type;
+    
+  +`INJURIES`: Quantity of injuries;
+    
+  +`FATALITIES`: Quantity of fatalities;
+    
+  +`PROPDMG`:  Amount in USD american dollars in Damages in properties;
+    
+  +`CROPDMG`:  Amount in USD american dollars in Damages in crops;
+    
+  +`PROPDMGEXP`: he exponential in base 10 used to notate the PROPDMG;
+    
+  +`CROPDMGEXP`: The exponential in base 10 used to notate the CROPDMG
+  
+  
+
+```{r, message=FALSE,warning=FALSE}
+# Subsetting the dataset
+df_subset <- select(raw_data,EVTYPE,INJURIES,FATALITIES,PROPDMG,PROPDMGEXP,CROPDMG,CROPDMGEXP)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
