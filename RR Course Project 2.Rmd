@@ -36,7 +36,7 @@ The events in the database start in the year 1950 and end in November 2011. In t
 
 The data analysis must address the following questions:
 
-1. Across the United States, which types of events (as indicated in the EVTYPEEVTYPEstart color red, start verbatim, EVTYPE, end verbatim, end color red variable) are most harmful with respect to population health?
+1. Across the United States, which types of events (as indicated in the `EVTYPE` start color red, start verbatim, `EVTYPE`, end verbatim, end color red variable) are most harmful with respect to population health?
 
 2. Across the United States, which types of events have the greatest economic consequences?
 
@@ -493,6 +493,105 @@ Across the United States, which types of events have the greatest economic conse
 
 As was response in question 1, the next step was defining a new variable for `economic consequences`, as the result of
 aggregating properties damages: Properties Damages (`PROPDMGABS`), and Crop Damage (`CROPDMGABS`).
+
+
+```{r, message=FALSE,warning=FALSE}
+
+# This subset will creates averages of each EVTYPE and add the Harmful variable.
+df_tidy_q2 <- df_tidy %>%
+    
+    # Creating the HARMFUL variable.
+    mutate(EXPENSES = PROPDMGABS + CROPDMGABS) %>%
+    
+    # Aggregate everything using EVTYPE.
+    group_by(EVTYPE) %>%
+    
+    # Summarizes the data using the group by EVTYPE.
+    summarise(EXPENSES = sum(EXPENSES, na.rm = TRUE),
+              QTY = n(),
+              PROPDMGABS = sum(PROPDMGABS, na.rm = TRUE),
+              CROPDMGABS = sum(CROPDMGABS, na.rm = TRUE)) %>%
+    
+    # Arrange to be descendant.
+    arrange(desc(EXPENSES)) %>%
+    
+    # Adding averages variables.
+    mutate(EXPENSES_AVG = EXPENSES/QTY,
+           PROPDMGABS_AVG = PROPDMGABS/QTY,
+           CROPDMGABS_AVG = CROPDMGABS/QTY) 
+
+```
+
+The adjusted dataset will be shown below.
+
+```{r, message=FALSE,warning=FALSE}
+# Printing the table from dataframe 
+head(df_tidy_q2, 19) %>% kableExtra::kbl() %>% kableExtra::kable_styling()
+
+```
+
+Based on the `df_tidy_q2`, let’s visualize it in a graph.
+
+```{r, message=FALSE,warning=FALSE}
+
+# Creating a auxiliary dataset to plot 1.
+
+rbind(
+    
+    # Gathering the dataset to have absolute data in rows.
+    df_tidy_q2 %>%
+    select(EVTYPE, PROPDMGABS, CROPDMGABS) %>%
+    mutate(EVTYPE = factor(EVTYPE, levels = EVTYPE),
+           PROPDMGABS = PROPDMGABS/1000000,
+           CROPDMGABS = CROPDMGABS/1000000) %>%
+    pivot_longer(cols = 2:3, names_to = "EXPENSES", values_to = "VALUES") %>%
+    mutate(VALUE_TYPE = factor("ABSOLUTE")),
+    
+    # Gathering the dataset to average have average data in rows.
+    df_tidy_q2 %>%
+    arrange(desc(EXPENSES_AVG)) %>%
+    select(EVTYPE, PROPDMGABS_AVG, CROPDMGABS_AVG) %>%
+    mutate(EVTYPE = factor(EVTYPE, levels = EVTYPE),
+           PROPDMGABS_AVG = PROPDMGABS_AVG/1000000,
+           CROPDMGABS_AVG = CROPDMGABS_AVG/1000000) %>%
+    pivot_longer(cols = 2:3, names_to = "EXPENSES", values_to = "VALUES")%>%
+    mutate(VALUE_TYPE = factor("AVERAGE"))) %>%
+    
+    # Plotting the graph using GGPLOT2
+    ggplot(aes(fill = EXPENSES, y = VALUES, x = EVTYPE)) + 
+    
+    # Defining a stacked barplot.
+    geom_bar(position = "stack", stat = "identity") +
+    
+    # Defining the graph title.
+    ggplot2::labs(title = "Economic Consequence of Event Types") + 
+    
+    # Defining the x-axis label
+    ggplot2::xlab("Event Type") +
+    
+    # Defining the y-axis label
+    ggplot2::ylab("Economic Impact [Million USD]") +
+    
+    # Adjusting the x-axis to be 90 degrees.
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
+          legend.position = "right",
+          plot.title = element_text(hjust = 0.5),
+          plot.subtitle = element_text(hjust = 0.5)) +
+    
+    # Removing the legend title.
+        ggplot2::guides(fill = ggplot2::guide_legend(title = "")) + 
+    
+    # Creating facet to show absolute and average values.
+    facet_grid(rows = vars(VALUE_TYPE), scales = "free")
+
+```
+
+
+# Remarks:
+
+`FLOOD` is the event with the greatest economic consequence (most of it related to Properties Damages). Between 1950 and 2011, it causes Damages to Properties and Crops that reach more than USD 180 billion. However, the `HURRICANE` is one event type with the highest average in terms of damage. On average, one hurricane’s outcome is around USD 300 million in damages.
+
+Finally, it is also important to point out that `EXCESSIVE HEAT` is the worst event related to Crops, which is almost USD 15.8 billion in Damages to Crops.
 
 
 
